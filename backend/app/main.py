@@ -27,25 +27,35 @@ def read_root():
 
 @app.post("/api/chat")
 async def chat_with_agent(request: ChatRequest):
-    agent = Agent(model_name=settings.MODEL_NAME)
-    api_endpoints = await agent.chat_with_agent_with_tools(
-        prompt=request.user_query,
-    )
+    try:
+        agent = Agent(model_name=settings.MODEL_NAME)
+        api_endpoint_name = await agent.chat_with_agent_with_tools(
+            user_query=request.user_query,
+        )
 
-    func_map = {
-        "get_company_data_api_info": company_api_info.get_company_data_api_info,
-        "get_screening_api_info": company_api_info.get_screening_api_info,
-        "get_identification_api_info": company_api_info.get_identification_api_info,
-        "get_dataset_api_info": company_api_info.get_dataset_api_info,
-        "get_linkedin_company_search_api_info": company_api_info.get_linkedin_company_search_api,
-        "get_linkedin_posts_company_api_info": company_api_info.get_linkedin_posts_company_api,
-        "get_linkedin_posts_keyword_api_info": company_api_info.get_linkedin_posts_keyword_api,
-        "get_people_profile_api_info": people_api_info.get_people_profile_api,
-        "get_people_search_api_info": people_api_info.get_people_search_api,
-        "get_linkedin_posts_by_person_api_info": people_api_info.get_linkedin_posts_by_person_api,
-        "get_remaining_credits_api_info": people_api_info.get_remaining_credits_api,
-    }
-    response = await agent.chat_with_agent(
-        prompt=request.user_query, api_end_point=func_map[api_endpoints]
-    )
-    return response
+        endpoint = None
+        try:
+            func_map = {
+                "get_company_data_api_info": company_api_info.get_company_data_api_info,
+                "get_screening_api_info": company_api_info.get_screening_api_info,
+                "get_identification_api_info": company_api_info.get_identification_api_info,
+                "get_dataset_api_info": company_api_info.get_dataset_api_info,
+                "get_linkedin_company_search_api_info": company_api_info.get_linkedin_company_search_api,
+                "get_linkedin_posts_company_api_info": company_api_info.get_linkedin_posts_company_api,
+                "get_linkedin_posts_keyword_api_info": company_api_info.get_linkedin_posts_keyword_api,
+                "get_people_profile_api_info": people_api_info.get_people_profile_api,
+                "get_people_search_api_info": people_api_info.get_people_search_api,
+                "get_linkedin_posts_by_person_api_info": people_api_info.get_linkedin_posts_by_person_api,
+                "get_remaining_credits_api_info": people_api_info.get_remaining_credits_api,
+            }
+
+            endpoint = func_map[api_endpoint_name]
+        except Exception as e:
+            print(e)
+
+        response = await agent.chat_with_agent(
+            prompt=request.user_query, api_end_point=endpoint
+        )
+        return response
+    except Exception:
+        return "Some error ocurred!"

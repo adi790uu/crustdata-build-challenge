@@ -3,38 +3,21 @@ import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { Send, Database } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import axios from "axios";
 
 interface Message {
   id: number;
   content: string;
-  sender: "user" | "other";
+  sender: "user" | "assistant";
   timestamp: Date;
 }
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      content: "Hey there! 👋",
-      sender: "other",
-      timestamp: new Date(Date.now() - 3600000),
-    },
-    {
-      id: 2,
-      content: "Hi! How are you?",
-      sender: "user",
-      timestamp: new Date(Date.now() - 3000000),
-    },
-    {
-      id: 3,
-      content: "I'm doing great! Just working on some new features.",
-      sender: "other",
-      timestamp: new Date(Date.now() - 2400000),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (newMessage.trim()) {
       setMessages([
         ...messages,
@@ -46,6 +29,24 @@ function App() {
         },
       ]);
       setNewMessage("");
+
+      try {
+        const response = await axios.post("http://localhost:8000/api/chat", {
+          user_query: newMessage,
+        });
+
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          {
+            id: prevMessages.length + 1,
+            content: response.data,
+            sender: "assistant",
+            timestamp: new Date(),
+          },
+        ]);
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     }
   };
 
@@ -59,7 +60,6 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen bg-zinc-900">
-      {/* Navbar */}
       <div className="border-b border-zinc-800 bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
         <div className="flex h-14 items-center px-4">
           <div className="flex items-center gap-2 font-semibold text-zinc-100">
@@ -68,9 +68,9 @@ function App() {
           </div>
         </div>
       </div>
-      {/* Messages */}
+
       <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4 max-w-2xl mx-auto">
+        <div className="space-y-6 max-w-2xl mx-auto">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -79,14 +79,18 @@ function App() {
               }`}
             >
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${
+                className={`max-w-[80%] break-words text-wrap rounded-lg p-3 ${
                   message.sender === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-zinc-800 text-zinc-100"
                 }`}
               >
-                <p>{message.content}</p>
-                <span className="text-xs opacity-70 mt-1 block">
+                {message.sender === "assistant" ? (
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                ) : (
+                  <p>{message.content}</p>
+                )}
+                <span className="text-xs opacity-70 mt-2 block">
                   {formatTime(message.timestamp)}
                 </span>
               </div>
@@ -95,7 +99,6 @@ function App() {
         </div>
       </ScrollArea>
 
-      {/* Input Area */}
       <div className="p-4 border-t border-zinc-800 bg-zinc-900">
         <div className="flex gap-2 max-w-2xl mx-auto">
           <Input
