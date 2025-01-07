@@ -2,6 +2,10 @@ import google.generativeai as genai
 from app.prompts import prompts
 from google.ai.generativelanguage_v1beta.types import content
 from app.core.config import settings
+from backend.app.core.company_api_info import (
+    get_company_data_api_info,
+    get_screening_api_info,
+)
 
 
 def query_analyzer(is_component: bool):
@@ -30,7 +34,7 @@ class Agent:
         self.model = genai.GenerativeModel(
             model_name=model_name,
             generation_config=generation_config,
-            system_instruction=prompts.get_prompt(chat_history=chat_history),
+            system_instruction=get_screening_api_info,
         )
 
     async def chat_with_agent(self, prompt: str):

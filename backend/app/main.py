@@ -27,13 +27,3 @@ async def chat_with_agent(request: ChatRequest):
     agent = Agent(model_name=settings.MODEL_NAME)
     response = await agent.chat_with_agent(prompt=request.user_query)
     return response
-
-
-@app.get("/settings")
-def get_settings():
-    return {
-        "environment": settings.ENVIRONMENT,
-        "app_name": settings.APP_NAME,
-        "api_prefix": settings.API_PREFIX,
-        "host_url": settings.HOST_URL,
-    }
