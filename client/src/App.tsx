@@ -5,6 +5,7 @@ import { ScrollArea } from "./components/ui/scroll-area";
 import { Send, Database, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import axios from "axios";
+import "./App.css";
 
 interface Message {
   id: number;
@@ -90,15 +91,15 @@ function App() {
               }`}
             >
               <div
-                className={`max-w-[80%] break-words rounded-lg p-3 word-break break-all ${
+                className={`max-w-[80%] break-words rounded-lg p-3 ${
                   message.sender === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-zinc-800 text-zinc-100"
                 }`}
               >
-                <div className="whitespace-pre-wrap">
+                <div className="whitespace-pre-wrap max-w-full">
                   {message.sender === "assistant" ? (
-                    <ReactMarkdown className="prose prose-invert max-w-none break-words whitespace-pre-wrap">
+                    <ReactMarkdown className="prose prose-invert break-words overflow-wrap-break-word whitespace-pre-wrap">
                       {message.content}
                     </ReactMarkdown>
                   ) : (
