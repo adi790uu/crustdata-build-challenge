@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
 import { ScrollArea } from "./components/ui/scroll-area";
-import { Send, Database } from "lucide-react";
+import { Send, Database, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import axios from "axios";
 
@@ -14,8 +14,17 @@ interface Message {
 }
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 1,
+      content: "Hello! How can I assist you today?",
+      sender: "assistant",
+      timestamp: new Date(),
+    },
+  ]);
+
   const [newMessage, setNewMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSend = async () => {
     if (newMessage.trim()) {
@@ -29,6 +38,7 @@ function App() {
         },
       ]);
       setNewMessage("");
+      setIsLoading(true);
 
       try {
         const response = await axios.post("http://localhost:8000/api/chat", {
@@ -44,6 +54,8 @@ function App() {
             timestamp: new Date(),
           },
         ]);
+
+        setIsLoading(false);
       } catch (error) {
         console.error("Error sending message:", error);
       }
@@ -79,23 +91,37 @@ function App() {
               }`}
             >
               <div
-                className={`max-w-[80%] break-words text-wrap rounded-lg p-3 ${
+                className={`max-w-[80%] break-words rounded-lg p-3 word-break break-all ${
                   message.sender === "user"
                     ? "bg-blue-600 text-white"
                     : "bg-zinc-800 text-zinc-100"
                 }`}
               >
-                {message.sender === "assistant" ? (
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
-                ) : (
-                  <p>{message.content}</p>
-                )}
+                <div className="whitespace-pre-wrap">
+                  {message.sender === "assistant" ? (
+                    <ReactMarkdown className="prose prose-invert max-w-none break-words whitespace-pre-wrap">
+                      {message.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
+                </div>
                 <span className="text-xs opacity-70 mt-2 block">
                   {formatTime(message.timestamp)}
                 </span>
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] break-words rounded-lg p-3 bg-zinc-800 text-zinc-100">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Thinking...</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </ScrollArea>
 
