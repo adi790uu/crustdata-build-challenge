@@ -1,7 +1,7 @@
 FROM python:3.11
 
 
-WORKDIR /app
+WORKDIR /src
 
 
 RUN pip install poetry
